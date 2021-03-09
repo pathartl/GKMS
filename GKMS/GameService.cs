@@ -54,6 +54,8 @@ namespace GKMS
 
         public IGame GetGame(Type gameType)
         {
+            Directory.CreateDirectory("Games");
+
             var path = Path.Combine("Games", $"{gameType.Name}.json");
 
             if (File.Exists(path))
@@ -64,7 +66,15 @@ namespace GKMS
             }
             else
             {
-                return null;
+                var instance = (IGame)Activator.CreateInstance(gameType);
+
+                instance.Keys = new string[] { };
+
+                var contents = JsonConvert.SerializeObject(instance, Formatting.Indented);
+
+                File.WriteAllText(path, contents);
+
+                return instance;
             }
         }
 
