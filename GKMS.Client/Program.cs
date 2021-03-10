@@ -99,7 +99,8 @@ namespace GKMS.Client
                 Height = 1,
                 Width = Dim.Fill(4),
                 TextAlignment = TextAlignment.Centered,
-                ColorScheme = Colors.Dialog
+                ColorScheme = Colors.Dialog,
+                Visible = false
             };
 
             KeyLabel = new Label()
@@ -109,7 +110,8 @@ namespace GKMS.Client
                 Width = Dim.Fill(4),
                 Height = 1,
                 TextAlignment = TextAlignment.Centered,
-                Text = "CD Key:"
+                Text = "CD Key:",
+                Visible = false
             };
 
             GetKeyButton = new Button()
@@ -117,7 +119,8 @@ namespace GKMS.Client
                 X = Pos.Center(),
                 Y = Pos.Center() + 2,
                 Height = 1,
-                Text = "Get Key"
+                Text = "Get Key",
+                Visible = false
             };
 
             GetKeyButton.Clicked += GetKeyButton_Clicked;
@@ -138,11 +141,13 @@ namespace GKMS.Client
             RightPane.Title = SelectedGame.Name;
             RightPane.SetFocus();
 
+            KeyField.Visible = true;
+            KeyLabel.Visible = true;
+            GetKeyButton.Visible = true;
+
             var currentKey = SelectedGame.GetKey();
 
             KeyField.Text = String.IsNullOrWhiteSpace(currentKey) ? "No Key Found" : currentKey;
-
-            //Get
         }
 
         private static void GetKeyButton_Clicked()
