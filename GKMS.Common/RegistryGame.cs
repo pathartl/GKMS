@@ -53,7 +53,12 @@ namespace GKMS.Common
                 baseRegistry = RegistryKey.OpenBaseKey(GetHive(), RegistryView.Registry32);
             }
 
-            var subKey = baseRegistry.OpenSubKey(GetRegistryPath());
+            var subKey = baseRegistry.OpenSubKey(GetRegistryPath(), true);
+
+            if (subKey == null)
+            {
+                subKey = baseRegistry.CreateSubKey(GetRegistryPath(), true);
+            }
 
             subKey.SetValue(RegistryValueName, key);
         }
