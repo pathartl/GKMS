@@ -154,7 +154,31 @@ namespace GKMS.Client
                 Message = SelectedGame.GetType().Name
             };
 
+            Listener.OnPacketReceived = UpdateKeyFromServer;
             Listener.Send(packet, new IPEndPoint(IPAddress.Broadcast, 420));
+        }
+
+        private static void UpdateKeyFromServer(Packet packet)
+        {
+            switch (packet.Type)
+            {
+                case PacketType.ClientChangeKey:
+                    var messageParts = packet.Message.Split('|');
+
+                    var gameType = GetSupportedGameTypes().FirstOrDefault(gt => gt.Name == messageParts[0]);
+
+                    if (gameType != null)
+                    {
+                        IGame game = (IGame)Activator.CreateInstance(gameType);
+
+                        game.ChangeKey(messageParts[1]);
+
+                        var currentKey = SelectedGame.GetKey();
+
+                        KeyField.Text = String.IsNullOrWhiteSpace(currentKey) ? "No Key Found" : currentKey;
+                    }
+                    break;
+            }
         }
 
         private static IEnumerable<Type> GetSupportedGameTypes()
