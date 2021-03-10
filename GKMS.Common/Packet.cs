@@ -59,6 +59,8 @@ namespace GKMS.Common
             {
                 messageBytes[i - 7] = bytes[i];
             }
+
+            Message = Encoding.ASCII.GetString(messageBytes).Trim('\0').Trim();
         }
     }
 }
