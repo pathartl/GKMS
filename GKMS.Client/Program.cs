@@ -30,27 +30,26 @@ namespace GKMS.Client
         {
             Console.OutputEncoding = Encoding.Default;
 
-            using (Listener = new Listener())
+            Listener = new Listener();
+
+            Application.Init();
+
+            var top = Application.Top;
+
+            Window = new Window("GKMS Client")
             {
-                Application.Init();
+                X = 0,
+                Y = 0,
+                Width = Dim.Fill(),
+                Height = Dim.Fill()
+            };
 
-                var top = Application.Top;
+            top.Add(Window);
 
-                Window = new Window("GKMS Client")
-                {
-                    X = 0,
-                    Y = 0,
-                    Width = Dim.Fill(),
-                    Height = Dim.Fill()
-                };
+            InitLeftPane();
+            InitRightPane();
 
-                top.Add(Window);
-
-                InitLeftPane();
-                InitRightPane();
-
-                Application.Run();
-            }
+            Application.Run();
         }
 
         private static void InitLeftPane()
