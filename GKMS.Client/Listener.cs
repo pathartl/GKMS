@@ -14,6 +14,8 @@ namespace GKMS.Client
         const int Port = 420;
         UdpClient Udp;
 
+        public _OnPacketReceived OnPacketReceived;
+
         public Listener()
         {
             Start();
@@ -30,7 +32,7 @@ namespace GKMS.Client
         {
             var bytes = packet.Encode();
 
-            Udp.Send(bytes, bytes.Length, ipe);
+            Udp.SendAsync(bytes, bytes.Length, ipe);
         }
 
         void Receive(IAsyncResult ar)
@@ -40,26 +42,14 @@ namespace GKMS.Client
             byte[] data = Udp.EndReceive(ar, ref ipe);
             byte[] physicalAddress = new byte[6];
 
-            var request = new Packet(data);
+            var response = new Packet(data);
 
-            Packet response;
+            OnPacketReceived(response);
 
-            switch (request.Type)
-            {
-                case PacketType.ClientChangeKey:
-                    var messageParts = request.Message.Split('|');
-
-                    var gameType = GetSupportedGameTypes().FirstOrDefault(gt => gt.Name == messageParts[0]);
-
-                    if (gameType != null)
-                    {
-                        IGame game = (IGame)Activator.CreateInstance(gameType);
-
-                        game.ChangeKey(messageParts[1]);
-                    }
-                    break;
-            }
+            Udp.BeginReceive(Receive, null);
         }
+
+        public delegate void _OnPacketReceived(Packet packet);
 
         private IEnumerable<Type> GetSupportedGameTypes()
         {
