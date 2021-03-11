@@ -6,6 +6,7 @@ namespace GKMS.Common
 {
     public enum PacketType
     {
+        Error,
         LocateServer,
         LocateClients,
         ServerLocated,
@@ -13,5 +14,6 @@ namespace GKMS.Common
         ServerAllocateKey,
         ClientChangeKey,
         ClientGetKey,
+        NoAvailableKeys
     }
 }

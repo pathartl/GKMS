@@ -3,15 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GKMS.Client
+namespace GKMS.Common
 {
     public class Listener : IDisposable
     {
-        const int Port = 420;
+        public const int Port = 420;
         UdpClient Udp;
 
         public _OnPacketReceived OnPacketReceived;
@@ -40,22 +41,17 @@ namespace GKMS.Client
             IPEndPoint ipe = new IPEndPoint(IPAddress.Any, 0);
 
             byte[] data = Udp.EndReceive(ar, ref ipe);
-            byte[] physicalAddress = new byte[6];
 
             var response = new Packet(data);
 
-            OnPacketReceived(response);
+            
+
+            OnPacketReceived(response, ipe);
 
             Udp.BeginReceive(Receive, null);
         }
 
-        public delegate void _OnPacketReceived(Packet packet);
-
-        private IEnumerable<Type> GetSupportedGameTypes()
-        {
-            return AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
-                .Where(x => typeof(IGame).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract).ToList();
-        }
+        public delegate void _OnPacketReceived(Packet packet, IPEndPoint ipe);
 
         public void Dispose()
         {

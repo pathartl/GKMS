@@ -22,6 +22,7 @@ namespace GKMS.Client
         private static Button GetKeyButton;
         private static IGame SelectedGame;
         private static Listener Listener;
+        private static byte[] PhysicalAddress;
 
         private static int GamesListViewItem;
         private static object ipe;
@@ -31,6 +32,14 @@ namespace GKMS.Client
             Console.OutputEncoding = Encoding.Default;
 
             Listener = new Listener();
+
+            Listener.Send(new Packet()
+            {
+                Message = "Go ahead, TACCOM",
+                Type = PacketType.LocateServer
+            }, new IPEndPoint(IPAddress.Broadcast, Listener.Port));
+
+            Listener.OnPacketReceived = PacketReceived;
 
             Application.Init();
 
@@ -63,7 +72,7 @@ namespace GKMS.Client
                 CanFocus = false
             };
 
-            Games = GetSupportedGameTypes().Select(gt => (IGame)Activator.CreateInstance(gt)).ToList();
+            Games = Helpers.GetSupportedGameTypes().Select(gt => (IGame)Activator.CreateInstance(gt)).ToList();
 
             GamesListView = new ListView(Games.Select(g => g.Name).ToList())
             {
@@ -155,21 +164,21 @@ namespace GKMS.Client
             var packet = new Packet()
             {
                 Type = PacketType.ServerAllocateKey,
-                Message = SelectedGame.GetType().Name
+                Message = SelectedGame.GetType().Name,
+                PhysicalAddress = PhysicalAddress
             };
 
-            Listener.OnPacketReceived = UpdateKeyFromServer;
             Listener.Send(packet, new IPEndPoint(IPAddress.Broadcast, 420));
         }
 
-        private static void UpdateKeyFromServer(Packet packet)
+        private static void PacketReceived(Packet packet, IPEndPoint ipe)
         {
             switch (packet.Type)
             {
                 case PacketType.ClientChangeKey:
                     var messageParts = packet.Message.Split('|');
 
-                    var gameType = GetSupportedGameTypes().FirstOrDefault(gt => gt.Name == messageParts[0]);
+                    var gameType = Helpers.GetSupportedGameTypes().FirstOrDefault(gt => gt.Name == messageParts[0]);
 
                     if (gameType != null)
                     {
@@ -182,13 +191,19 @@ namespace GKMS.Client
                         KeyField.Text = String.IsNullOrWhiteSpace(currentKey) ? "No Key Found" : currentKey;
                     }
                     break;
+
+                case PacketType.ServerLocated:
+                    var nics = NetworkInterface.GetAllNetworkInterfaces();
+
+                    foreach (var nic in nics)
+                    {
+
+                    }
+
+                    break;
             }
         }
 
-        private static IEnumerable<Type> GetSupportedGameTypes()
-        {
-            return AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
-                .Where(x => typeof(IGame).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract).ToList();
-        }
+        
     }
 }
