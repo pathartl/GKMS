@@ -56,14 +56,27 @@ namespace GKMS
 
                 case PacketType.ServerAllocateKey:
                     string gameType = packet.Message.Trim();
-                    string key = GetKey(gameType, "");
+                    string physicalAddress = new PhysicalAddress(packet.PhysicalAddress).ToString();
+                    string key = GetKey(gameType, physicalAddress);
 
-                    response = new Packet()
+                    if (key != "")
                     {
-                        Type = PacketType.ClientChangeKey,
-                        PhysicalAddress = packet.PhysicalAddress,
-                        Message = $"{gameType}|{key}"
-                    };
+                        response = new Packet()
+                        {
+                            Type = PacketType.ClientChangeKey,
+                            PhysicalAddress = packet.PhysicalAddress,
+                            Message = $"{gameType}|{key}"
+                        };
+                    }
+                    else
+                    {
+                        response = new Packet()
+                        {
+                            Type = PacketType.NoAvailableKeys,
+                            PhysicalAddress = packet.PhysicalAddress,
+                            Message = $"No keys were available."
+                        };
+                    }
 
                     Listener.Send(response, ipe);
                     break;
@@ -87,18 +100,25 @@ namespace GKMS
 
                 var unallocatedKeys = game.Keys.Where(k => !allocatedKeys.Any(ka => ka.Key == k)).ToList();
 
-                var newAllocation = new KeyAllocation()
+                if (game.Keys.Length != 0)
                 {
-                    Key = unallocatedKeys[new Random().Next(0, unallocatedKeys.Count - 1)],
-                    GameType = gameType,
-                    PhysicalAddress = physicalAddress
-                };
+                    var newAllocation = new KeyAllocation()
+                    {
+                        Key = unallocatedKeys[new Random().Next(0, unallocatedKeys.Count - 1)],
+                        GameType = gameType,
+                        PhysicalAddress = physicalAddress
+                    };
 
-                Context.KeyAllocations.Add(newAllocation);
+                    Context.KeyAllocations.Add(newAllocation);
 
-                Context.SaveChanges();
+                    Context.SaveChanges();
 
-                return newAllocation.Key;
+                    return newAllocation.Key;
+                }
+                else
+                {
+                    return "";
+                }
             }
             else
             {
