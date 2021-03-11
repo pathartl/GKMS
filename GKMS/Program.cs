@@ -19,6 +19,8 @@ namespace GKMS
 
         static void Main(string[] args)
         {
+            Console.WriteLine("GKMS Started.");
+
             var nics = NetworkInterface.GetAllNetworkInterfaces();
 
             Listener = new Listener();
@@ -67,6 +69,8 @@ namespace GKMS
                             PhysicalAddress = packet.PhysicalAddress,
                             Message = $"{gameType}|{key}"
                         };
+
+                        Console.WriteLine($"Allocated {key} for game {gameType} for client {ipe.Address} ({physicalAddress})");
                     }
                     else
                     {
@@ -76,6 +80,8 @@ namespace GKMS
                             PhysicalAddress = packet.PhysicalAddress,
                             Message = $"No keys were available."
                         };
+
+                        Console.WriteLine($"Could not find key for game {gameType} for client {ipe.Address} ({physicalAddress})");
                     }
 
                     Listener.Send(response, ipe);
