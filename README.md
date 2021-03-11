@@ -27,7 +27,7 @@ Some notes:
 * Packet types are used to designate what kind of packet is being send. The most used are ServerAllocateKey and ClientChangeKey. These are implemented in C# using enums.
 * Yes, it uses UDP. No real reason. If you want TCP, feel free to submit a pull request.
 * Port is currently not changeable.
-* ServerAllocateKey packets broadcast a packet that looks like `05000000000000Battlefield1942` where the first byte `05` is the int value of the ServerAllocateKey PacketType enum value, the next six bytes `000000000000` is the client's MAC address, and `Battlefield1942` is the class name of the supported game.
+* ServerAllocateKey packets broadcast a packet that looks like `06000000000000Battlefield1942` where the first byte `06` is the int value of the ServerAllocateKey PacketType enum value, the next six bytes `000000000000` is the client's MAC address, and `Battlefield1942` is the class name of the supported game.
 * Packets requesting keys from the server are sent via the network's broadcast address. The server will respond directly to the client.
 
 ## Why does GKMS.Client require admin privileges?
@@ -68,9 +68,18 @@ The `Name` field isn't all that important and really is only used to remind you 
 
 This is currently not implemented. If you know Git/Github take a look at the definitions within the GKMS.Common project and feel free to submit a pull request.
 
+## How do I check which keys have been allocated?
+
+It's a bit manual at the moment. `GKMS.db` is a SQLite database, so you can browse that data if you want to know.
+
+## These binaries are huge! Do you really need <insert comment about .NET bloat here>?
+
+Yes. Got a problem? Contribute!
+
+But for real, the project is built in .NET 5.0. The server binary could run on Linux if you wanted to compile it.
+
 ## Known issues
 
 * Keys are pulled from the `.json` files randomly
-* No database has been implemented to keep track of who has which key. This is a planned feature.
 * Port is currently not configurable
 * There's no command line arguments. It'd be nice to have these to automate key changes.
