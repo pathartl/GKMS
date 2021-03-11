@@ -1,0 +1,14 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace GKMS.Common.Games
+{
+    public class CallOfDuty4 : RegistryGame
+    {
+        public override string Name { get { return "Call of Duty 4"; } }
+        public override string RegistryPath { get { return @"HKEY_LOCAL_MACHINE\SOFTWARE\Activision\Call of Duty 4"; } }
+        public override string RegistryValueName { get { return "codkey"; } }
+        public override bool CanUseWow6432Node { get { return true; } }
+    }
+}
