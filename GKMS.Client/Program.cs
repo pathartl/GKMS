@@ -197,7 +197,12 @@ namespace GKMS.Client
 
                     foreach (var nic in nics)
                     {
+                        var ipProperties = nic.GetIPProperties();
 
+                        if (ipProperties.UnicastAddresses.Any(ipai => ipai.Address.ToString() == packet.Message))
+                        {
+                            PhysicalAddress = nic.GetPhysicalAddress().GetAddressBytes();
+                        }
                     }
 
                     break;
