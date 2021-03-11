@@ -15,19 +15,21 @@ namespace GKMS
     class Program
     {
         private static Listener Listener;
-        private static DatabaseContext Database;
+        private static DatabaseContext Context;
 
         static void Main(string[] args)
         {
             var nics = NetworkInterface.GetAllNetworkInterfaces();
 
             Listener = new Listener();
-            Database = new DatabaseContext();
+            Context = new DatabaseContext();
+
+            Context.Database.EnsureCreated();
 
             AppDomain.CurrentDomain.ProcessExit += (s, ev) =>
             {
                 Listener.Dispose();
-                Database.Dispose();
+                Context.Dispose();
             };
 
             Listener.OnPacketReceived = PacketReceived;
@@ -46,7 +48,7 @@ namespace GKMS
                     {
                         Type = PacketType.ServerLocated,
                         PhysicalAddress = packet.PhysicalAddress,
-                        Message = "You found Waldo!"
+                        Message = ipe.Address.ToString()
                     };
 
                     Listener.Send(response, ipe);
@@ -74,13 +76,13 @@ namespace GKMS
 
             if (game != null)
             {
-                var allocatedKeys = Database.KeyAllocations.Where(ka => ka.GameType == gameType).ToList();
+                var allocatedKeys = Context.KeyAllocations.Where(ka => ka.GameType == gameType).ToList();
                 var currentKey = allocatedKeys.FirstOrDefault(ka => ka.PhysicalAddress == physicalAddress);
 
                 if (currentKey != null)
                 {
                     // Free up the currently allocated key
-                    Database.KeyAllocations.Remove(currentKey);
+                    Context.KeyAllocations.Remove(currentKey);
                 }
 
                 var unallocatedKeys = game.Keys.Where(k => !allocatedKeys.Any(ka => ka.Key == k)).ToList();
@@ -92,9 +94,9 @@ namespace GKMS
                     PhysicalAddress = physicalAddress
                 };
 
-                Database.KeyAllocations.Add(newAllocation);
+                Context.KeyAllocations.Add(newAllocation);
 
-                Database.SaveChanges();
+                Context.SaveChanges();
 
                 return newAllocation.Key;
             }
